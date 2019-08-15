@@ -2,6 +2,7 @@ import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
+import seaborn as sns
 
 #Specify url to import
 url = "https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data"
@@ -108,3 +109,64 @@ print(anova_results)
 #Compare ANOVA for variance in price between honda and jaguar car makers
 anova_results = stats.f_oneway(anova_grp.get_group("honda")["price"], anova_grp.get_group("jaguar")["price"])
 print(anova_results)
+
+#Plot correlation between car engine size and price
+x = df["engine-size"]
+y = df["price"]
+
+sns.regplot(x="engine-size", y="price", data=df)
+plt.ylim(0,)
+plt.title("Correlation between car engine size and price")
+plt.show()
+
+#Plot correlation between car highway mpg and price
+x = df["highway-mpg"]
+y = df["price"]
+
+sns.regplot(x="highway-mpg", y="price", data=df)
+plt.ylim(0,)
+plt.title("Correlation between car highway mpg and price")
+plt.show()
+
+#Plot correlation between car peak rpm and price
+df["peak-rpm"] = df["peak-rpm"].astype("float")
+x = df["peak-rpm"]
+y = df["price"]
+
+sns.regplot(x="peak-rpm", y="price", data=df)
+plt.ylim(0,)
+plt.title("Correlation between car peak rpm and price")
+plt.show()
+
+#Show pearson coefficient and p-value for variables horsepower and price
+df["horsepower"] = df["horsepower"].astype("float")
+df.dropna(subset=["horsepower"], axis=0, inplace=True)
+print(df["horsepower"])
+
+pearson_coef, p_value = stats.pearsonr(df["horsepower"], df["price"])
+print(pearson_coef)
+print(p_value)
+
+#Show pearson coefficient and p-value for variables highway mpg and price
+pearson_coef, p_value = stats.pearsonr(df["highway-mpg"], df["price"])
+print(pearson_coef)
+print(p_value)
+
+#Show pearson coefficient and p-value for variables peak rpm and price
+df["peak-rpm"] = df["peak-rpm"].astype("float")
+df.dropna(subset=["peak-rpm"], axis=0, inplace=True)
+pearson_coef, p_value = stats.pearsonr(df["peak-rpm"], df["price"])
+print(pearson_coef)
+print(p_value)
+
+#Show correlation between variables
+corr = df.corr()
+print(corr)
+
+#Show category sizes using boxplot
+x = df["body-style"]
+y = df["price"]
+sns.boxplot(x="body-style", y="price", data=df)
+plt.ylim(0,)
+plt.title("Category sizes for car body types and price")
+plt.show()
