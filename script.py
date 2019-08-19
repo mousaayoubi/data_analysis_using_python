@@ -3,6 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy import stats
 import seaborn as sns
+from sklearn.linear_model import LinearRegression
 
 #Specify url to import
 url = "https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data"
@@ -68,6 +69,8 @@ print(df)
 print(df["drive-wheels"].value_counts())
 
 df["price"] = df["price"].astype("int64")
+df.dropna(subset=["horsepower"], axis=0, inplace=True)
+df["horsepower"] = df["horsepower"].astype("int64")
 print(df.dtypes)
 
 #Show relationship between engine-size and price using a scatter plot
@@ -163,10 +166,48 @@ print(p_value)
 corr = df.corr()
 print(corr)
 
-#Show category sizes using boxplot
+#Show category sizes for car body style and price using boxplot
 x = df["body-style"]
 y = df["price"]
 sns.boxplot(x="body-style", y="price", data=df)
 plt.ylim(0,)
 plt.title("Category sizes for car body types and price")
 plt.show()
+
+#Show category sizes for car engine location and price using boxplot
+x = df["engine-location"]
+y = df["price"]
+sns.boxplot(x="engine-location", y="price", data=df)
+plt.ylim(0,)
+plt.title("Category sizes for car engine location and price")
+plt.show()
+
+#Show category sizes for car drive wheel and price using boxplot
+x = df["drive-wheels"]
+y = df["price"]
+sns.boxplot(x="drive-wheels", y="price", data=df)
+plt.ylim(0,)
+plt.title("Category sizes for car drive wheel and price")
+plt.show()
+
+#Describe the data and include object description
+print(df.describe(include=["object"]))
+
+#Predict the dependent variable price value based on highway-mpg using simple linear regression
+lm = LinearRegression()
+X = df[["highway-mpg"]]
+Y = df["price"]
+
+lm.fit(X, Y)
+Yhat = lm.predict(X)
+print(Yhat)
+print(lm.intercept_)
+print(lm.coef_)
+
+#Predict the dependent variable price valuse based on horsepower, curb-weight, engine-size, highway-mpg using multiple linear regression
+Z = df[["horsepower", "curb-weight", "engine-size", "highway-mpg"]]
+lm.fit(Z, df["price"])
+Yhat = lm.predict(Z)
+print(Yhat)
+print(lm.intercept_)
+print(lm.coef_)
