@@ -4,6 +4,10 @@ import matplotlib.pyplot as plt
 from scipy import stats
 import seaborn as sns
 from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.preprocessing import StandardScaler
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import mean_squared_error
 
 #Specify url to import
 url = "https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data"
@@ -122,6 +126,12 @@ plt.ylim(0,)
 plt.title("Correlation between car engine size and price")
 plt.show()
 
+#Show the residual plot to check if the linear model is appropriate for engine-size and price
+sns.residplot(x, y)
+plt.ylim(-15000,)
+plt.title("Residual plot of regression linear model of engine-size and price")
+plt.show()
+
 #Plot correlation between car highway mpg and price
 x = df["highway-mpg"]
 y = df["price"]
@@ -129,6 +139,12 @@ y = df["price"]
 sns.regplot(x="highway-mpg", y="price", data=df)
 plt.ylim(0,)
 plt.title("Correlation between car highway mpg and price")
+plt.show()
+
+#Show the residual plot to check if the linear model is appropriate for car highway mpg and price
+sns.residplot(x, y)
+plt.ylim(-20000,)
+plt.title("Residual plot of regression linear model of car highway mpg and price")
 plt.show()
 
 #Plot correlation between car peak rpm and price
@@ -140,6 +156,28 @@ sns.regplot(x="peak-rpm", y="price", data=df)
 plt.ylim(0,)
 plt.title("Correlation between car peak rpm and price")
 plt.show()
+
+#Show the residual plot to check if the linear model is appropriate for car peak rpm and price
+sns.residplot(x, y)
+plt.ylim(-30000,)
+plt.title("Residual plot of regression linear model of car peak rpm and price")
+plt.show()
+
+#Fit the model using polynomial regression with 1 dimension
+f = np.polyfit(x, y, 3)
+p = np.poly1d(f)
+print(f)
+
+#Fit the model using polynomial regression with multiple dimensions
+pr=PolynomialFeatures(degree=2)
+x_polly = pr.fit_transform(df[["horsepower", "peak-rpm"]])
+print(x_polly)
+
+#Normalize features using StandardScaler
+SCALE = StandardScaler()
+SCALE.fit(df[["horsepower", "highway-mpg"]])
+x_scale = SCALE.transform(df[["horsepower", "highway-mpg"]])
+print(x_scale)
 
 #Show pearson coefficient and p-value for variables horsepower and price
 df["horsepower"] = df["horsepower"].astype("float")
@@ -204,6 +242,23 @@ print(Yhat)
 print(lm.intercept_)
 print(lm.coef_)
 
+print("The predicted sale value of a car with highway MPG of 30 is "+str(Yhat[30]))
+
+#Show the R2 value for the prediction model fit for highway-mpg and price
+R2 = lm.score(X, Y)
+print("The R2 value for the prediction model fit for highway-mpg and price is "+str(R2))
+
+#Compare the fit of the model for actual vs predicted values for highway-mpg and price
+ax1 = sns.distplot(Y, hist=False, color="r", label="Actual Value" )
+sns.distplot(Yhat, hist=False, color="b", label="Fitted Values", ax=ax1)
+plt.ylim(0,)
+plt.title("Compare the fit of the linear model for actual vs predited values for highway-mpg and price")
+plt.show()
+
+#Compare the fit of the model using Mean Squared Error (MSE)
+mse = mean_squared_error(df["price"], Yhat)
+print("The mean square error (MSE) is "+str(mse))
+
 #Predict the dependent variable price valuse based on horsepower, curb-weight, engine-size, highway-mpg using multiple linear regression
 Z = df[["horsepower", "curb-weight", "engine-size", "highway-mpg"]]
 lm.fit(Z, df["price"])
@@ -211,3 +266,11 @@ Yhat = lm.predict(Z)
 print(Yhat)
 print(lm.intercept_)
 print(lm.coef_)
+
+#Use a pipeline to speed up the process
+Input = [("scale", StandardScaler()), ("polynomial", PolynomialFeatures(include_bias=False)), ("model", LinearRegression())]
+pipe = Pipeline(Input)
+
+pipe.fit(Z, y)
+ypipe = pipe.predict(Z)
+print(ypipe[0:4])
