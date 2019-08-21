@@ -8,6 +8,11 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.preprocessing import StandardScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.model_selection import cross_val_score
+from sklearn.model_selection import cross_val_predict
+from sklearn.linear_model import Ridge
+from sklearn.model_selection import GridSearchCV
 
 #Specify url to import
 url = "https://archive.ics.uci.edu/ml/machine-learning-databases/autos/imports-85.data"
@@ -25,7 +30,7 @@ df.columns = headers
 print(df.head(10))
 
 #Specify path to export new dataset
-path = "C://Program Files/Git/Projects/datascience/new_dataset.csv"
+path = "C://Program Files/Git/Projects/data_analysis_using_python/new_dataset.csv"
 
 #Export new dataset to new file
 df.to_csv(path)
@@ -76,6 +81,10 @@ df["price"] = df["price"].astype("int64")
 df.dropna(subset=["horsepower"], axis=0, inplace=True)
 df["horsepower"] = df["horsepower"].astype("int64")
 print(df.dtypes)
+
+#Show correlation between variables
+df_corr = df.corr()
+df_corr.to_csv("C://Program Files/Git/Projects/data_analysis_using_python/df_corr.csv")
 
 #Show relationship between engine-size and price using a scatter plot
 x = df["engine-size"]
@@ -130,6 +139,36 @@ plt.show()
 sns.residplot(x, y)
 plt.ylim(-15000,)
 plt.title("Residual plot of regression linear model of engine-size and price")
+plt.show()
+
+#Plot correlation between curb weight size and price
+x = df["curb-weight"]
+y = df["price"]
+
+sns.regplot(x="curb-weight", y="price", data=df)
+plt.ylim(0,)
+plt.title("Correlation between car curb weight and price")
+plt.show()
+
+#Show the residual plot to check if the linear model is appropriate for curb-weight and price
+sns.residplot(x, y)
+plt.ylim(-15000,)
+plt.title("Residual plot of regression linear model of curb-weight and price")
+plt.show()
+
+#Plot correlation between horsepower and price
+x = df["horsepower"]
+y = df["price"]
+
+sns.regplot(x="horsepower", y="price", data=df)
+plt.ylim(0,)
+plt.title("Correlation between car horsepower and price")
+plt.show()
+
+#Show the residual plot to check if the linear model is appropriate for horsepower and price
+sns.residplot(x, y)
+plt.ylim(-15000,)
+plt.title("Residual plot of regression linear model of horsepower and price")
 plt.show()
 
 #Plot correlation between car highway mpg and price
@@ -274,3 +313,113 @@ pipe = Pipeline(Input)
 pipe.fit(Z, y)
 ypipe = pipe.predict(Z)
 print(ypipe[0:4])
+
+#Split the data into a train sample and a test sample to train the model
+x_train, x_test, y_train, y_test = train_test_split(df[["highway-mpg", "engine-size", "curb-weight", "horsepower"]], df["price"], test_size=0.3, random_state=0)
+
+print(x_train, x_test, y_train, y_test)
+
+#Calculate cross validation score
+scores = cross_val_score(LinearRegression(), df[["highway-mpg", "engine-size", "curb-weight", "horsepower"]], df["price"], cv=3)
+print(np.mean(scores))
+
+#Calculate cross validation prediction model
+yHat2 = cross_val_predict(LinearRegression(), df[["highway-mpg", "engine-size", "curb-weight", "horsepower"]], df["price"], cv=3)
+print(yHat2)
+
+#Fit the model bettwe using Ridge model
+RidgeModel = Ridge(alpha=0.1)
+RidgeModel.fit(X, y)
+
+yHat3 = RidgeModel.predict(X)
+print(yHat3)
+
+#Predict the dependent variable price value based on engine-size using simple linear regression
+lm = LinearRegression()
+X = df[["engine-size"]]
+Y = df["price"]
+
+lm.fit(X, Y)
+Yhat = lm.predict(X)
+print(lm.intercept_, lm.coef_)
+
+#Show the R2 value for the prediction model fit for engine-size and price
+R2 = lm.score(X, Y)
+print("The R2 value for the prediction model fit for engine-size and price is "+str(R2))
+
+#Compare the fit of the model for actual vs predicted values for engine-size and price
+ax1 = sns.distplot(Y, hist=False, color="r", label="Actual Value" )
+sns.distplot(Yhat, hist=False, color="b", label="Fitted Values", ax=ax1)
+plt.ylim(0,)
+plt.title("Compare the fit of the linear model for actual vs predited values for engine-size and price")
+plt.show()
+
+#Predict the dependent variable price value based on curb-weight using simple linear regression
+lm = LinearRegression()
+X = df[["curb-weight"]]
+Y = df["price"]
+
+lm.fit(X, Y)
+Yhat = lm.predict(X)
+print(lm.intercept_, lm.coef_)
+
+#Show the R2 value for the prediction model fit for curb-weight and price
+R2 = lm.score(X, Y)
+print("The R2 value for the prediction model fit for curb-weight and price is "+str(R2))
+
+#Compare the fit of the model for actual vs predicted values for curb-weight and price
+ax1 = sns.distplot(Y, hist=False, color="r", label="Actual Value" )
+sns.distplot(Yhat, hist=False, color="b", label="Fitted Values", ax=ax1)
+plt.ylim(0,)
+plt.title("Compare the fit of the linear model for actual vs predited values for curb-weight and price")
+plt.show()
+
+#Predict the dependent variable price value based on horsepower using simple linear regression
+lm = LinearRegression()
+X = df[["horsepower"]]
+Y = df["price"]
+
+lm.fit(X, Y)
+Yhat = lm.predict(X)
+print(lm.intercept_, lm.coef_)
+
+#Show the R2 value for the prediction model fit for horsepower and price
+R2 = lm.score(X, Y)
+print("The R2 value for the prediction model fit for horsepower and price is "+str(R2))
+
+#Compare the fit of the model for actual vs predicted values for horsepower and price
+ax1 = sns.distplot(Y, hist=False, color="r", label="Actual Value" )
+sns.distplot(Yhat, hist=False, color="b", label="Fitted Values", ax=ax1)
+plt.ylim(0,)
+plt.title("Compare the fit of the linear model for actual vs predited values for horsepower and price")
+plt.show()
+
+#Predict the dependent variable price valuse based on engine-size, curb-weight, horsepower using multiple linear regression
+lm = LinearRegression()
+Z = df[["engine-size", "curb-weight", "horsepower"]]
+Y = df["price"]
+lm.fit(Z, Y)
+Yhat = lm.predict(Z)
+print(lm.intercept_, lm.coef_)
+
+#Show the R2 value for the prediction model fit for engine-size, curb-weight, horsepower and price
+R2 = lm.score(Z, Y)
+print("The R2 value for the prediction model fit for engine-size, curb-weight, horsepower and price is "+str(R2))
+
+#Compare the fit of the model for actual vs predicted values for engine-size, curb-weight, horsepower and price
+ax1 = sns.distplot(Y, hist=False, color="r", label="Actual Value" )
+sns.distplot(Yhat, hist=False, color="b", label="Fitted Values", ax=ax1)
+plt.ylim(0,)
+plt.title("Compare the fit of the linear model for actual vs predited values for engine-size, curb-weight, horsepower and price")
+plt.show()
+
+parameters = [{"alpha":[0.001, 0.1, 1, 10, 100], "normalize": [True, False]}]
+RR = Ridge()
+Grid = GridSearchCV(RR, parameters, cv=4)
+
+Grid.fit(df[["engine-size", "curb-weight", "horsepower"]], y)
+Grid.best_estimator_
+
+scores = Grid.cv_results_
+
+print(scores)
